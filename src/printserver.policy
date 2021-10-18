@@ -1,0 +1,14 @@
+grant codebase "file:./LoginModule.jar" {
+    permission javax.security.auth.AuthPermission "modifyPrincipals";
+};
+
+grant codebase "file:./PrintServer.jar" {
+   permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
+   permission javax.security.auth.AuthPermission "doAsPrivileged";
+};
+
+grant codebase "file:./SampleAction.jar", Principal printserver.principal.SamplePrincipal "testUser" {
+   permission java.util.PropertyPermission "java.home", "read";
+   permission java.util.PropertyPermission "user.home", "read";
+   permission java.io.FilePermission "foo.txt", "read";
+};
