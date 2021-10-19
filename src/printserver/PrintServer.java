@@ -9,7 +9,7 @@ public class PrintServer {
 
     }
 
-    public void topQueue() {
+    public void topQueue(int job) {
 
     }
 
