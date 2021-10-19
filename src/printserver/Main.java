@@ -1,5 +1,7 @@
 package printserver;
 
+import printserver.action.PrintAction;
+
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
 import java.security.Principal;
@@ -66,11 +68,12 @@ public class Main {
                 mySubject.getPublicCredentials().size() +
                 " Public Credential(s)");
 
+        PrintServer printServer = new PrintServer();
+
         // now try to execute the SampleAction as the authenticated Subject
-        PrivilegedAction<Object> action = new SampleAction();
+        PrivilegedAction<Object> action = new PrintAction(printServer, "dummy.txt");
         Subject.doAsPrivileged(mySubject, action, null);
 
         System.exit(0);
-
     }
 }

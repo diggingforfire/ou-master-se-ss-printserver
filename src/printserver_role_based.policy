@@ -1,0 +1,39 @@
+grant codebase "file:./LoginModule.jar" {
+    permission javax.security.auth.AuthPermission "modifyPrincipals";
+};
+
+grant codebase "file:./PrintServer.jar" {
+   permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
+   permission javax.security.auth.AuthPermission "doAsPrivileged";
+};
+
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "sysadmin" {
+   permission printserver.PrintServerPermission "print";
+   permission printserver.PrintServerPermission "queue";
+   permission printserver.PrintServerPermission "topqueue";
+   permission printserver.PrintServerPermission "status";
+   permission printserver.PrintServerPermission "start";
+   permission printserver.PrintServerPermission "stop";
+   permission printserver.PrintServerPermission "reset";
+   permission printserver.PrintServerPermission "readconfig";
+   permission printserver.PrintServerPermission "setconfig";
+};
+
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "concierge" {
+   permission printserver.PrintServerPermission "start";
+   permission printserver.PrintServerPermission "stop";
+   permission printserver.PrintServerPermission "reset";
+   permission printserver.PrintServerPermission "readconfig";
+   permission printserver.PrintServerPermission "setconfig";
+};
+
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "poweruser" {
+   permission printserver.PrintServerPermission "topqueue";
+   permission printserver.PrintServerPermission "reset";
+};
+
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "normaluser" {
+   permission printserver.PrintServerPermission "print";
+   permission printserver.PrintServerPermission "queue";
+   permission printserver.PrintServerPermission "status";
+};
