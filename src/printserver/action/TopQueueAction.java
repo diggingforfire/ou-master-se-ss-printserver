@@ -14,7 +14,7 @@ public class TopQueueAction implements PrivilegedAction {
         this.printServer = printServer;
         this.job = job;
     }
-    
+
     @Override
     public Object run() {
         Permission p = new PrintServerPermission("topqueue");
