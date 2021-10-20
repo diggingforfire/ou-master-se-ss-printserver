@@ -5,6 +5,22 @@ grant codebase "file:./LoginModule.jar" {
 grant codebase "file:./PrintServer.jar" {
    permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
    permission javax.security.auth.AuthPermission "doAsPrivileged";
+
+};
+
+// permissions needed for sqlite
+grant codebase "file:./*" {
+   permission java.util.PropertyPermission "java.vm.vendor", "read";
+   permission java.util.PropertyPermission "java.io.tmpdir", "read";
+   permission java.util.PropertyPermission "org.sqlite.tmpdir", "read";
+   permission java.util.PropertyPermission "org.sqlite.lib.path", "read";
+   permission java.util.PropertyPermission "org.sqlite.lib.name", "read";
+   permission java.util.PropertyPermission "os.name", "read";
+   permission java.util.PropertyPermission "os.arch", "read";
+   permission java.util.PropertyPermission "java.runtime.name", "read";
+   permission java.util.PropertyPermission "java.library.path", "read";
+   permission java.io.FilePermission "<<ALL FILES>>", "read, write, delete";
+   permission java.lang.RuntimePermission "loadLibrary.*";
 };
 
 grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "alice" {

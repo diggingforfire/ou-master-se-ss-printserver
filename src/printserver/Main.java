@@ -1,16 +1,29 @@
 package printserver;
 
 import printserver.action.PrintAction;
+import printserver.data.DataManager;
+import printserver.security.Hasher;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.spec.InvalidKeySpecException;
+import java.sql.SQLException;
 import java.util.Iterator;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvalidKeySpecException, NoSuchAlgorithmException, SQLException {
+
+        char[] key = new char[]{'a', 'b', 'c'};
+
+        DataManager dataManager = new DataManager(new Hasher(), key);
+        dataManager.createDataIfNotExists();
+
+        dataManager.validateCredentials("dirk", "testpassword".toCharArray());
+
         LoginContext lc = null;
 
         try {

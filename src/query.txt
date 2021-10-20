@@ -1,0 +1,3 @@
+SELECT u.username, r.rolename, HEX(u.password), HEX(u.salt), length(u.salt) as salt_size, length(u.password) as key_size, iterationcount  FROM user_role ur 
+JOIN user u ON ur.userid = u. userid
+JOIN role r ON UR.roleid = r.roleid

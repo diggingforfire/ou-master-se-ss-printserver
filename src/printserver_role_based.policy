@@ -5,6 +5,7 @@ grant codebase "file:./LoginModule.jar" {
 grant codebase "file:./PrintServer.jar" {
    permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
    permission javax.security.auth.AuthPermission "doAsPrivileged";
+   permission java.util.PropertyPermission "java.vm.vendor" "read";
 };
 
 grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "sysadmin" {
