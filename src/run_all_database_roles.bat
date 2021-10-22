@@ -1,0 +1,1 @@
+.\scripts\clean.bat && .\scripts\compile.bat && .\scripts\package.bat && .\scripts\run_database_roles.bat
