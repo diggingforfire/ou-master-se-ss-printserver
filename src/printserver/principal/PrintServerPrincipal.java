@@ -3,13 +3,13 @@ package printserver.principal;
 import java.security.Principal;
 import java.util.Objects;
 
-public class PrintServerUserPrincipal implements Principal, java.io.Serializable {
+public class PrintServerPrincipal implements Principal, java.io.Serializable {
     /**
      * @serial
      */
     private String name;
 
-    public PrintServerUserPrincipal(String name) {
+    public PrintServerPrincipal(String name) {
         if (name == null) {
             throw new IllegalArgumentException("name cannot be null");
         }
@@ -23,14 +23,14 @@ public class PrintServerUserPrincipal implements Principal, java.io.Serializable
 
     @Override
     public String toString() {
-        return "PrintServerUserPrincipal: " + getName();
+        return "PrintServerPrincipal: " + getName();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PrintServerUserPrincipal that = (PrintServerUserPrincipal) o;
+        PrintServerPrincipal that = (PrintServerPrincipal) o;
         return Objects.equals(name, that.name);
     }
 

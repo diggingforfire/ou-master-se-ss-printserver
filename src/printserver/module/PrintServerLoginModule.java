@@ -1,12 +1,18 @@
 package printserver.module;
 
-import printserver.principal.PrintServerUserPrincipal;
+import printserver.data.DataManager;
+import printserver.principal.PrintServerPrincipal;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.*;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class PrintServerLoginModule implements LoginModule {
@@ -17,6 +23,8 @@ public class PrintServerLoginModule implements LoginModule {
 
     // configurable option
     private boolean debug = false;
+    private boolean hardcoded = true;
+    private boolean rolebased = false;
 
     // the authentication status
     private boolean succeeded = false;
@@ -25,9 +33,13 @@ public class PrintServerLoginModule implements LoginModule {
     // username and password
     private String username;
     private char[] password;
+    private String[] roles;
+
+    // hard coded usernames
+    private List<String> usernames = Arrays.asList("erica", "dirk", "cecile", "bart", "alice");
 
     // principal
-    private PrintServerUserPrincipal printServerUserPrincipal;
+    private PrintServerPrincipal printServerPrincipal;
 
     public void initialize(Subject subject,
                            CallbackHandler callbackHandler,
@@ -39,6 +51,13 @@ public class PrintServerLoginModule implements LoginModule {
 
         // initialize any configured options
         debug = "true".equalsIgnoreCase((String)options.get("debug"));
+        hardcoded = "true".equalsIgnoreCase((String)options.get("hardcoded"));
+        rolebased = "true".equalsIgnoreCase((String)options.get("rolebased"));
+
+        if (debug) {
+            System.out.println("hardcoded: " + hardcoded);
+            System.out.println("rolebased: " + rolebased);
+        }
     }
 
     public boolean login() throws LoginException {
@@ -85,39 +104,45 @@ public class PrintServerLoginModule implements LoginModule {
             System.out.println();
         }
 
-        // verify the username/password
         boolean usernameCorrect = false;
-        if (username.equals("dirk") || (username.equals("erica")))
-            usernameCorrect = true;
-        if (usernameCorrect &&
-                password.length == 12 &&
-                password[0] == 't' &&
-                password[1] == 'e' &&
-                password[2] == 's' &&
-                password[3] == 't' &&
-                password[4] == 'P' &&
-                password[5] == 'a' &&
-                password[6] == 's' &&
-                password[7] == 's' &&
-                password[8] == 'w' &&
-                password[9] == 'o' &&
-                password[10] == 'r' &&
-                password[11] == 'd') {
 
-            // authentication succeeded!!!
-            if (debug)
-                System.out.println("\t\t[PrintServerLoginModule] " +
-                        "authentication succeeded");
+        if (hardcoded) {
+            usernameCorrect = this.usernames.contains(username);
+        } else {
+            try {
+                usernameCorrect = DataManager.validateUsername(username);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (usernameCorrect && isPasswordCorrect(username, password)) {
+
+            if (debug) {
+                System.out.println("authentication succeeded");
+            }
+
             succeeded = true;
+
+            if (rolebased) {
+                try {
+                    this.roles = DataManager.getUserRoles(username);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
             return true;
         } else {
 
-            // authentication failed -- clean out state
-            if (debug)
-                System.out.println("\t\t[PrintServerLoginModule] " +
-                        "authentication failed");
+
+            if (debug) {
+                System.out.println("authentication failed");
+            }
+
             succeeded = false;
             username = null;
+            roles = null;
             for (int i = 0; i < password.length; i++)
                 password[i] = ' ';
             password = null;
@@ -129,25 +154,59 @@ public class PrintServerLoginModule implements LoginModule {
         }
     }
 
-    public boolean commit() throws LoginException {
+    private boolean isPasswordCorrect(String username, char[] password) {
+        if (hardcoded) {
+            return password.length == 12 &&
+                    password[0] == 't' &&
+                    password[1] == 'e' &&
+                    password[2] == 's' &&
+                    password[3] == 't' &&
+                    password[4] == 'P' &&
+                    password[5] == 'a' &&
+                    password[6] == 's' &&
+                    password[7] == 's' &&
+                    password[8] == 'w' &&
+                    password[9] == 'o' &&
+                    password[10] == 'r' &&
+                    password[11] == 'd';
+        } else {
+            try {
+                return DataManager.validatePassword(username, password);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+    }
+
+    public boolean commit() {
         if (succeeded == false) {
             return false;
         } else {
-            // add a Principal (authenticated identity)
-            // to the Subject
+            if (rolebased) {
+                for (String role : this.roles) {
+                    printServerPrincipal = new PrintServerPrincipal(role);
 
-            // assume the user we authenticated is the SamplePrincipal
-            printServerUserPrincipal = new PrintServerUserPrincipal(username);
-            if (!subject.getPrincipals().contains(printServerUserPrincipal))
-                subject.getPrincipals().add(printServerUserPrincipal);
+                    if (debug) {
+                        System.out.println("Adding principal for role " + role);
+                    }
 
-            if (debug) {
-                System.out.println("\t\t[PrintServerLoginModule] " +
-                        "added PrintServerUserPrincipal to Subject");
+                    if (!subject.getPrincipals().contains(printServerPrincipal)) {
+                        subject.getPrincipals().add(printServerPrincipal);
+                    }
+
+                }
+
+            } else {
+                printServerPrincipal = new PrintServerPrincipal(username);
+                if (!subject.getPrincipals().contains(printServerPrincipal))
+                    subject.getPrincipals().add(printServerPrincipal);
+
             }
 
             // in any case, clean out state
             username = null;
+            roles = null;
             for (int i = 0; i < password.length; i++)
                 password[i] = ' ';
             password = null;
@@ -157,7 +216,7 @@ public class PrintServerLoginModule implements LoginModule {
         }
     }
 
-    public boolean abort() throws LoginException {
+    public boolean abort() {
         if (succeeded == false) {
             return false;
         } else if (succeeded == true && commitSucceeded == false) {
@@ -169,7 +228,7 @@ public class PrintServerLoginModule implements LoginModule {
                     password[i] = ' ';
                 password = null;
             }
-            printServerUserPrincipal = null;
+            printServerPrincipal = null;
         } else {
             // overall authentication succeeded and commit succeeded,
             // but someone else's commit failed
@@ -178,9 +237,9 @@ public class PrintServerLoginModule implements LoginModule {
         return true;
     }
 
-    public boolean logout() throws LoginException {
+    public boolean logout() {
 
-        subject.getPrincipals().remove(printServerUserPrincipal);
+        subject.getPrincipals().remove(printServerPrincipal);
         succeeded = false;
         succeeded = commitSucceeded;
         username = null;
@@ -189,7 +248,7 @@ public class PrintServerLoginModule implements LoginModule {
                 password[i] = ' ';
             password = null;
         }
-        printServerUserPrincipal = null;
+        printServerPrincipal = null;
         return true;
     }
 }

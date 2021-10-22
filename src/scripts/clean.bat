@@ -1,5 +1,7 @@
-:: recursively removes all jar and class files
-del /S /Q *.jar
+:: recursively remove all class files
 del /S /Q *.class
 
-if exist out rmdir out
+:: remove generated jar files
+del /Q PrintServer.jar
+del /Q LoginModule.jar
+del /Q Action.jar

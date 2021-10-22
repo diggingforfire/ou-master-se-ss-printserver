@@ -2,7 +2,6 @@ package printserver;
 
 import printserver.action.PrintAction;
 import printserver.data.DataManager;
-import printserver.security.Hasher;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
@@ -19,10 +18,8 @@ public class Main {
 
         char[] key = new char[]{'a', 'b', 'c'};
 
-        DataManager dataManager = new DataManager(new Hasher(), key);
-        dataManager.createDataIfNotExists();
-
-        dataManager.validateCredentials("dirk", "testpassword".toCharArray());
+        DataManager.init(key);
+        DataManager.createDataIfNotExists();
 
         LoginContext lc = null;
 

@@ -5,7 +5,6 @@ grant codebase "file:./LoginModule.jar" {
 grant codebase "file:./PrintServer.jar" {
    permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
    permission javax.security.auth.AuthPermission "doAsPrivileged";
-
 };
 
 // permissions needed for sqlite
@@ -23,7 +22,7 @@ grant codebase "file:./*" {
    permission java.lang.RuntimePermission "loadLibrary.*";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "alice" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "alice" {
    permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "topqueue";
@@ -35,7 +34,7 @@ grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerU
    permission printserver.PrintServerPermission "setconfig";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "bart" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "bart" {
    permission printserver.PrintServerPermission "start";
    permission printserver.PrintServerPermission "stop";
    permission printserver.PrintServerPermission "reset";
@@ -43,18 +42,18 @@ grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerU
    permission printserver.PrintServerPermission "setconfig";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "cecile" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "cecile" {
    permission printserver.PrintServerPermission "topqueue";
    permission printserver.PrintServerPermission "reset";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "dirk" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "dirk" {
    permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "status";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "erica" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "erica" {
    permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "status";

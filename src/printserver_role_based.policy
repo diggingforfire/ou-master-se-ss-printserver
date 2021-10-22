@@ -5,10 +5,24 @@ grant codebase "file:./LoginModule.jar" {
 grant codebase "file:./PrintServer.jar" {
    permission javax.security.auth.AuthPermission "createLoginContext.PrintServer";
    permission javax.security.auth.AuthPermission "doAsPrivileged";
-   permission java.util.PropertyPermission "java.vm.vendor" "read";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "sysadmin" {
+// permissions needed for sqlite
+grant codebase "file:./*" {
+   permission java.util.PropertyPermission "java.vm.vendor", "read";
+   permission java.util.PropertyPermission "java.io.tmpdir", "read";
+   permission java.util.PropertyPermission "org.sqlite.tmpdir", "read";
+   permission java.util.PropertyPermission "org.sqlite.lib.path", "read";
+   permission java.util.PropertyPermission "org.sqlite.lib.name", "read";
+   permission java.util.PropertyPermission "os.name", "read";
+   permission java.util.PropertyPermission "os.arch", "read";
+   permission java.util.PropertyPermission "java.runtime.name", "read";
+   permission java.util.PropertyPermission "java.library.path", "read";
+   permission java.io.FilePermission "<<ALL FILES>>", "read, write, delete";
+   permission java.lang.RuntimePermission "loadLibrary.*";
+};
+
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "sysadmin" {
    permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "topqueue";
@@ -20,7 +34,7 @@ grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerU
    permission printserver.PrintServerPermission "setconfig";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "concierge" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "concierge" {
    permission printserver.PrintServerPermission "start";
    permission printserver.PrintServerPermission "stop";
    permission printserver.PrintServerPermission "reset";
@@ -28,12 +42,12 @@ grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerU
    permission printserver.PrintServerPermission "setconfig";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "poweruser" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "poweruser" {
    permission printserver.PrintServerPermission "topqueue";
    permission printserver.PrintServerPermission "reset";
 };
 
-grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerUserPrincipal "normaluser" {
+grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "normaluser" {
    permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "status";
