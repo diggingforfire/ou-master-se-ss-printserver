@@ -3,6 +3,9 @@ package printserver.principal;
 import java.security.Principal;
 import java.util.Objects;
 
+/**
+ * Basic principal for the print server. Used for both user based and role based principals.
+ */
 public class PrintServerPrincipal implements Principal, java.io.Serializable {
     /**
      * @serial

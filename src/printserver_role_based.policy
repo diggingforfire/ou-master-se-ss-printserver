@@ -48,7 +48,7 @@ grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerP
 };
 
 grant codebase "file:./Action.jar", Principal printserver.principal.PrintServerPrincipal "normaluser" {
-   //permission printserver.PrintServerPermission "print";
+   permission printserver.PrintServerPermission "print";
    permission printserver.PrintServerPermission "queue";
    permission printserver.PrintServerPermission "status";
 };

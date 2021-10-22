@@ -4,25 +4,45 @@ import printserver.action.*;
 import printserver.data.DataManager;
 
 import javax.security.auth.Subject;
-import javax.security.auth.login.*;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
+import java.security.GeneralSecurityException;
 import java.security.PrivilegedAction;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) throws InvalidKeySpecException, NoSuchAlgorithmException, SQLException {
+    public static void main(String[] args) {
 
-        char[] key = new char[]{'a', 'b', 'c'};
+        if (Arrays.asList(args).contains("usedatabase")) {
+            System.out.println("Please enter database password: ");
+            char[] databaseKey = new char[0];
+            try {
+                databaseKey = readPassword(System.in);
+            } catch (IOException e) {
+                System.out.println("Error reading database password");
+                e.printStackTrace();
+                System.exit(-1);
+            }
 
-        DataManager.init(key);
-        DataManager.createDataIfNotExists();
+            try {
+                DataManager.init(databaseKey);
+                DataManager.createDataIfNotExists();
+            } catch (SQLException sqle) {
+                System.out.println("Error initializing database. Possible invalid key!");
+                System.exit(-1);
+            } catch (GeneralSecurityException ge) {
+                System.out.println("Error creating database.");
+                ge.printStackTrace();
+                System.exit(-1);
+            }
+        }
 
         LoginContext loginContext = null;
         LoginCallbackHandler loginCallbackHandler = new LoginCallbackHandler();
@@ -36,9 +56,7 @@ public class Main {
 
         loginCallbackHandler.setPassword(new char[]{'t', 'e', 's', 't', 'P', 'a', 's', 's', 'w', 'o', 'r', 'd'});
 
-
         List<String> usernames = Arrays.asList("erica", "dirk", "cecile", "bart", "alice");
-
 
         for (String username : usernames) {
 
@@ -63,7 +81,9 @@ public class Main {
                 loginContext.logout();
 
             } catch (LoginException e) {
-                System.out.println("Could not login for user " + username);
+                System.out.println("Could not login for user " + username + ". " + e);
+            } finally {
+
             }
         }
     }
@@ -82,5 +102,57 @@ public class Main {
         actions.add(new TopQueueAction(printServer, 1));
 
         return actions;
+    }
+
+    private static char[] readPassword(InputStream in) throws IOException {
+
+        char[] lineBuffer;
+        char[] buf;
+
+        buf = lineBuffer = new char[128];
+
+        int room = buf.length;
+        int offset = 0;
+        int c;
+
+        loop:
+        while (true) {
+            switch (c = in.read()) {
+                case -1:
+                case '\n':
+                    break loop;
+
+                case '\r':
+                    int c2 = in.read();
+                    if ((c2 != '\n') && (c2 != -1)) {
+                        if (!(in instanceof PushbackInputStream)) {
+                            in = new PushbackInputStream(in);
+                        }
+                        ((PushbackInputStream)in).unread(c2);
+                    } else
+                        break loop;
+
+                default:
+                    if (--room < 0) {
+                        buf = new char[offset + 128];
+                        room = buf.length - offset - 1;
+                        System.arraycopy(lineBuffer, 0, buf, 0, offset);
+                        Arrays.fill(lineBuffer, ' ');
+                        lineBuffer = buf;
+                    }
+                    buf[offset++] = (char) c;
+                    break;
+            }
+        }
+
+        if (offset == 0) {
+            return null;
+        }
+
+        char[] ret = new char[offset];
+        System.arraycopy(buf, 0, ret, 0, offset);
+        Arrays.fill(buf, ' ');
+
+        return ret;
     }
 }

@@ -9,35 +9,33 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class PrintServerLoginModule implements LoginModule {
 
-    // initial state
+    // state
     private Subject subject;
     private CallbackHandler callbackHandler;
 
-    // configurable option
+    // options
     private boolean debug = false;
     private boolean hardcoded = true;
     private boolean rolebased = false;
 
-    // the authentication status
+    // auth status
     private boolean succeeded = false;
     private boolean commitSucceeded = false;
 
-    // username and password
     private String username;
     private char[] password;
     private String[] roles;
 
-    // hard coded usernames
     private List<String> usernames = Arrays.asList("erica", "dirk", "cecile", "bart", "alice");
 
-    // principal
-    private PrintServerPrincipal printServerPrincipal;
+    private List<PrintServerPrincipal> printServerPrincipals = new ArrayList<>();
 
     public void initialize(Subject subject,
                            CallbackHandler callbackHandler,
@@ -47,10 +45,13 @@ public class PrintServerLoginModule implements LoginModule {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
 
-        // initialize any configured options
         debug = "true".equalsIgnoreCase((String)options.get("debug"));
         hardcoded = "true".equalsIgnoreCase((String)options.get("hardcoded"));
         rolebased = "true".equalsIgnoreCase((String)options.get("rolebased"));
+
+        if (hardcoded && rolebased) {
+            throw new IllegalArgumentException("hardcoded and rolebased can't both be true");
+        }
 
         if (debug) {
             System.out.println("hardcoded: " + hardcoded);
@@ -59,12 +60,6 @@ public class PrintServerLoginModule implements LoginModule {
     }
 
     public boolean login() throws LoginException {
-
-        // prompt for a user name and password
-        if (callbackHandler == null)
-            throw new LoginException("Error: no CallbackHandler available " +
-                    "to garner authentication information from the user");
-
         Callback[] callbacks = new Callback[2];
         callbacks[0] = new NameCallback("user name: ");
         callbacks[1] = new PasswordCallback("password: ", false);
@@ -74,12 +69,11 @@ public class PrintServerLoginModule implements LoginModule {
             username = ((NameCallback)callbacks[0]).getName();
             char[] tmpPassword = ((PasswordCallback)callbacks[1]).getPassword();
             if (tmpPassword == null) {
-                // treat a NULL password as an empty password
                 tmpPassword = new char[0];
             }
+
             password = new char[tmpPassword.length];
-            System.arraycopy(tmpPassword, 0,
-                    password, 0, tmpPassword.length);
+            System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
             ((PasswordCallback)callbacks[1]).clearPassword();
 
         } catch (java.io.IOException ioe) {
@@ -90,15 +84,12 @@ public class PrintServerLoginModule implements LoginModule {
                     "from the user");
         }
 
-        // print debugging information
         if (debug) {
-            System.out.println("\t\t[PrintServerLoginModule] " +
-                    "user entered user name: " +
-                    username);
-            System.out.print("\t\t[PrintServerLoginModule] " +
-                    "user entered password: ");
+            System.out.println("\t\t[PrintServerLoginModule] " + "user entered user name: " + username);
+            System.out.print("\t\t[PrintServerLoginModule] " + "user entered password: ");
             for (int i = 0; i < password.length; i++)
                 System.out.print(password[i]);
+
             System.out.println();
         }
 
@@ -190,7 +181,7 @@ public class PrintServerLoginModule implements LoginModule {
         } else {
             if (rolebased) {
                 for (String role : this.roles) {
-                    printServerPrincipal = new PrintServerPrincipal(role);
+                    PrintServerPrincipal printServerPrincipal = new PrintServerPrincipal(role);
 
                     if (debug) {
                         System.out.println("Adding principal for role " + role);
@@ -200,31 +191,25 @@ public class PrintServerLoginModule implements LoginModule {
                         subject.getPrincipals().add(printServerPrincipal);
                     }
 
+                    if (!printServerPrincipals.contains(printServerPrincipal)) {
+                        printServerPrincipals.add(printServerPrincipal);
+                    }
+
                 }
 
             } else {
-                printServerPrincipal = new PrintServerPrincipal(username);
+                PrintServerPrincipal printServerPrincipal = new PrintServerPrincipal(username);
                 if (!subject.getPrincipals().contains(printServerPrincipal)) {
                     subject.getPrincipals().add(printServerPrincipal);
-
                 }
-            }
 
-            // in any case, clean out state
-            username = null;
-
-            if (roles != null) {
-                for (int i = 0; i < roles.length; i++) {
-                    roles[i] = "";
+                if (!printServerPrincipals.contains(printServerPrincipal)) {
+                    printServerPrincipals.add(printServerPrincipal);
                 }
-                roles = null;
+
             }
 
-            for (int i = 0; i < password.length; i++) {
-                password[i] = ' ';
-            }
-            password = null;
-
+            cleanUpState();
             commitSucceeded = true;
             return true;
         }
@@ -236,21 +221,10 @@ public class PrintServerLoginModule implements LoginModule {
         } else if (succeeded == true && commitSucceeded == false) {
             // login succeeded but overall authentication failed
             succeeded = false;
-            username = null;
 
-            if (roles != null) {
-                for (int i = 0; i < roles.length; i++) {
-                    roles[i] = "";
-                }
-                roles = null;
-            }
+            cleanUpState();
 
-            if (password != null) {
-                for (int i = 0; i < password.length; i++)
-                    password[i] = ' ';
-                password = null;
-            }
-            printServerPrincipal = null;
+            printServerPrincipals.clear();
         } else {
             // overall authentication succeeded and commit succeeded,
             // but someone else's commit failed
@@ -261,9 +235,19 @@ public class PrintServerLoginModule implements LoginModule {
 
     public boolean logout() {
 
-        subject.getPrincipals().remove(printServerPrincipal);
+        for (PrintServerPrincipal principal : printServerPrincipals) {
+            subject.getPrincipals().remove(principal);
+        }
+
         succeeded = false;
         succeeded = commitSucceeded;
+
+        cleanUpState();
+
+        return true;
+    }
+
+    private void cleanUpState() {
         username = null;
 
         if (roles != null) {
@@ -278,9 +262,5 @@ public class PrintServerLoginModule implements LoginModule {
                 password[i] = ' ';
             password = null;
         }
-
-
-
-        return true;
     }
 }

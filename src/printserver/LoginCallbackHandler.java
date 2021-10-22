@@ -4,6 +4,9 @@ import javax.security.auth.callback.*;
 
 public class LoginCallbackHandler implements CallbackHandler {
 
+    private String username;
+    private char[] password;
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -11,10 +14,6 @@ public class LoginCallbackHandler implements CallbackHandler {
     public void setPassword(char[] password) {
         this.password = password;
     }
-
-    private String username;
-    private char[] password;
-
 
     @Override
     public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
@@ -30,5 +29,4 @@ public class LoginCallbackHandler implements CallbackHandler {
             }
         }
     }
-
 }
