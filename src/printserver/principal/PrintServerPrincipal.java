@@ -23,7 +23,7 @@ public class PrintServerPrincipal implements Principal, java.io.Serializable {
 
     @Override
     public String toString() {
-        return "PrintServerPrincipal: " + getName();
+        return "Principal: " + getName();
     }
 
     @Override

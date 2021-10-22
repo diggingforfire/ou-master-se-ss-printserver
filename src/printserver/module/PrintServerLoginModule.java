@@ -8,8 +8,6 @@ import javax.security.auth.callback.*;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -142,7 +140,14 @@ public class PrintServerLoginModule implements LoginModule {
 
             succeeded = false;
             username = null;
-            roles = null;
+
+            if (roles != null) {
+                for (int i = 0; i < roles.length; i++) {
+                    roles[i] = "";
+                }
+                roles = null;
+            }
+
             for (int i = 0; i < password.length; i++)
                 password[i] = ' ';
             password = null;
@@ -199,16 +204,25 @@ public class PrintServerLoginModule implements LoginModule {
 
             } else {
                 printServerPrincipal = new PrintServerPrincipal(username);
-                if (!subject.getPrincipals().contains(printServerPrincipal))
+                if (!subject.getPrincipals().contains(printServerPrincipal)) {
                     subject.getPrincipals().add(printServerPrincipal);
 
+                }
             }
 
             // in any case, clean out state
             username = null;
-            roles = null;
-            for (int i = 0; i < password.length; i++)
+
+            if (roles != null) {
+                for (int i = 0; i < roles.length; i++) {
+                    roles[i] = "";
+                }
+                roles = null;
+            }
+
+            for (int i = 0; i < password.length; i++) {
                 password[i] = ' ';
+            }
             password = null;
 
             commitSucceeded = true;
@@ -223,6 +237,14 @@ public class PrintServerLoginModule implements LoginModule {
             // login succeeded but overall authentication failed
             succeeded = false;
             username = null;
+
+            if (roles != null) {
+                for (int i = 0; i < roles.length; i++) {
+                    roles[i] = "";
+                }
+                roles = null;
+            }
+
             if (password != null) {
                 for (int i = 0; i < password.length; i++)
                     password[i] = ' ';
@@ -243,12 +265,22 @@ public class PrintServerLoginModule implements LoginModule {
         succeeded = false;
         succeeded = commitSucceeded;
         username = null;
+
+        if (roles != null) {
+            for (int i = 0; i < roles.length; i++) {
+                roles[i] = "";
+            }
+            roles = null;
+        }
+
         if (password != null) {
             for (int i = 0; i < password.length; i++)
                 password[i] = ' ';
             password = null;
         }
-        printServerPrincipal = null;
+
+
+
         return true;
     }
 }

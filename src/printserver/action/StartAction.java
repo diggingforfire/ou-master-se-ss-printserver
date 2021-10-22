@@ -1,27 +1,21 @@
 package printserver.action;
 
 import printserver.PrintServer;
-import printserver.PrintServerPermission;
 
-import java.security.Permission;
-import java.security.PrivilegedAction;
-
-public class StartAction implements PrivilegedAction {
-    private PrintServer printServer;
+public class StartAction extends PrivilegedPrintServerAction {
 
     public StartAction(PrintServer printServer) {
-        this.printServer = printServer;
+        super(printServer);
     }
 
     @Override
-    public Object run() {
-        Permission p = new PrintServerPermission("start");
-        SecurityManager s = System.getSecurityManager();
-        if (s != null) {
-            s.checkPermission(p);
-        }
-
-        printServer.reset();
-        return null;
+    String getOperationName() {
+        return "start";
     }
+
+    @Override
+    void operation() {
+        getPrintServer().start();
+    }
+
 }

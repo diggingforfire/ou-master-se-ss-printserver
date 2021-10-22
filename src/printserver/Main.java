@@ -1,6 +1,6 @@
 package printserver;
 
-import printserver.action.PrintAction;
+import printserver.action.*;
 import printserver.data.DataManager;
 
 import javax.security.auth.Subject;
@@ -10,7 +10,10 @@ import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class Main {
 
@@ -21,69 +24,63 @@ public class Main {
         DataManager.init(key);
         DataManager.createDataIfNotExists();
 
-        LoginContext lc = null;
+        LoginContext loginContext = null;
+        LoginCallbackHandler loginCallbackHandler = new LoginCallbackHandler();
 
         try {
-            lc = new LoginContext("PrintServer", new LoginCallbackHandler());
-        } catch (LoginException le) {
-            System.err.println("Cannot create LoginContext. "  + le.getMessage());
-            System.exit(-1);
-        } catch (SecurityException se) {
-            System.err.println("Cannot create LoginContext. "  + se.getMessage());
+            loginContext = new LoginContext("PrintServer", loginCallbackHandler);
+        } catch (Exception e) {
+            System.err.println("Cannot create LoginContext. "  + e.getMessage());
             System.exit(-1);
         }
 
-        // the user has 3 attempts to authenticate successfully
-        int i;
-        for (i = 0; i < 3; i++) {
+        loginCallbackHandler.setPassword(new char[]{'t', 'e', 's', 't', 'P', 'a', 's', 's', 'w', 'o', 'r', 'd'});
+
+
+        List<String> usernames = Arrays.asList("erica", "dirk", "cecile", "bart", "alice");
+
+
+        for (String username : usernames) {
+
+            loginCallbackHandler.setUsername(username);
+
             try {
+                loginContext.login();
 
-                // attempt authentication
-                lc.login();
+                Subject subject = loginContext.getSubject();
 
-                // if we return with no exception,
-                // authentication succeeded
-                break;
+                PrintServer printServer = new PrintServer();
 
-            } catch (LoginException le) {
+                List<PrivilegedAction<Object>> actions = getPrivilegedActions(printServer);
 
-                System.err.println("Authentication failed:");
-                System.err.println("  " + le.getMessage());
-                try {
-                    Thread.currentThread().sleep(3000);
-                } catch (Exception e) {
-                    // ignore
+                System.out.println("Username: " + username);
+                System.out.println(subject.getPrincipals().toArray()[0]);
+                for (PrivilegedAction<Object> action : actions) {
+                    System.out.print("\t");
+                    Subject.doAsPrivileged(subject, action, null);
                 }
 
+                loginContext.logout();
+
+            } catch (LoginException e) {
+                System.out.println("Could not login for user " + username);
             }
         }
+    }
 
-        // did they fail three times?
-        if (i == 3) {
-            System.out.println("Sorry");
-            System.exit(-1);
-        }
+    private static List<PrivilegedAction<Object>> getPrivilegedActions(PrintServer printServer) {
+        List<PrivilegedAction<Object>> actions = new ArrayList<>();
 
-        System.out.println("Authentication succeeded!");
+        actions.add(new PrintAction(printServer, "dummy.txt"));
+        actions.add(new QueueAction(printServer));
+        actions.add(new ReadConfigAction(printServer, "dummy"));
+        actions.add(new ResetAction(printServer));
+        actions.add(new SetConfigAction(printServer, "dummy", "dummy"));
+        actions.add(new StartAction(printServer));
+        actions.add(new StatusAction(printServer));
+        actions.add(new StopAction(printServer));
+        actions.add(new TopQueueAction(printServer, 1));
 
-        Subject mySubject = lc.getSubject();
-
-        Iterator<Principal> principalIterator = mySubject.getPrincipals().iterator();
-        System.out.println("Authenticated user has the following Principals:");
-        while (principalIterator.hasNext()) {
-            Principal p = principalIterator.next();
-            System.out.println("\t" + p.toString());
-        }
-        System.out.println("User has " +
-                mySubject.getPublicCredentials().size() +
-                " Public Credential(s)");
-
-        PrintServer printServer = new PrintServer();
-
-        // now try to execute the SampleAction as the authenticated Subject
-        PrivilegedAction<Object> action = new PrintAction(printServer, "dummy.txt");
-        Subject.doAsPrivileged(mySubject, action, null);
-
-        System.exit(0);
+        return actions;
     }
 }

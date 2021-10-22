@@ -9,13 +9,13 @@ public class PrintServerPermission extends BasicPermission implements Serializab
     public PrintServerPermission(String id) {
         super(id);
         this.id = id;
-
-        System.out.println("PrintServerPermission: " + id);
     }
+
     public boolean implies(Permission permission) {
         PrintServerPermission bp = (PrintServerPermission) permission;
         return id.equals(bp.id);
     }
+
     public String getActions() { return "";    }
     public int hashCode() {
         return id.hashCode();
