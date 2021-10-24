@@ -22,22 +22,20 @@ public abstract class PrivilegedPrintServerAction implements PrivilegedAction<Ob
     public Object run() {
         SecurityManager securityManager = System.getSecurityManager();
 
-        if (securityManager == null) {
-            throw new IllegalStateException("No security manager available");
+        if (securityManager != null) {
+            Permission permission = new PrintServerPermission(getOperationName());
+
+            System.out.print("Permission to run operation " + getOperationName() + ":\t\t");
+
+            try {
+                securityManager.checkPermission(permission);
+                System.out.print("TRUE");
+            } catch (AccessControlException ace) {
+                System.out.print("FALSE");
+            }
+
+            System.out.println();
         }
-
-        Permission permission = new PrintServerPermission(getOperationName());
-
-        System.out.print("Permission to run operation " + getOperationName() + ":\t\t");
-
-        try {
-            securityManager.checkPermission(permission);
-            System.out.print("TRUE");
-        } catch (AccessControlException ace) {
-            System.out.print("FALSE");
-        }
-
-        System.out.println();
 
         operation();
 
