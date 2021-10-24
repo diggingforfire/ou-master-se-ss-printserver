@@ -67,9 +67,7 @@ public class Main {
 
                 Subject subject = loginContext.getSubject();
 
-                PrintServer printServer = new PrintServer();
-
-                List<PrivilegedAction<Object>> actions = getPrivilegedActions(printServer);
+                List<PrivilegedAction<Object>> actions = getPrivilegedActions();
 
                 System.out.println("Username: " + username);
                 System.out.println(subject.getPrincipals().toArray()[0]);
@@ -88,18 +86,18 @@ public class Main {
         }
     }
 
-    private static List<PrivilegedAction<Object>> getPrivilegedActions(PrintServer printServer) {
+    private static List<PrivilegedAction<Object>> getPrivilegedActions() {
         List<PrivilegedAction<Object>> actions = new ArrayList<>();
 
-        actions.add(new PrintAction(printServer, "dummy.txt"));
-        actions.add(new QueueAction(printServer));
-        actions.add(new ReadConfigAction(printServer, "dummy"));
-        actions.add(new ResetAction(printServer));
-        actions.add(new SetConfigAction(printServer, "dummy", "dummy"));
-        actions.add(new StartAction(printServer));
-        actions.add(new StatusAction(printServer));
-        actions.add(new StopAction(printServer));
-        actions.add(new TopQueueAction(printServer, 1));
+        actions.add(new PrintAction("dummy.txt"));
+        actions.add(new QueueAction());
+        actions.add(new ReadConfigAction("dummy"));
+        actions.add(new ResetAction());
+        actions.add(new SetConfigAction("dummy", "dummy"));
+        actions.add(new StartAction());
+        actions.add(new StatusAction());
+        actions.add(new StopAction());
+        actions.add(new TopQueueAction(1));
 
         return actions;
     }

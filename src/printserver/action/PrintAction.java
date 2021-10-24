@@ -1,13 +1,10 @@
 package printserver.action;
 
-import printserver.PrintServer;
-
 public class PrintAction extends PrivilegedPrintServerAction {
 
     private String filename;
 
-    public PrintAction(PrintServer printServer, String filename) {
-        super(printServer);
+    public PrintAction(String filename) {
         this.filename = filename;
     }
 

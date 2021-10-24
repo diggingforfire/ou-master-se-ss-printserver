@@ -1,6 +1,5 @@
 package printserver.action;
 
-import printserver.PrintServer;
 import printserver.PrintServerPermission;
 
 import java.security.AccessControlException;
@@ -8,11 +7,8 @@ import java.security.Permission;
 import java.security.PrivilegedAction;
 
 public abstract class PrivilegedPrintServerAction implements PrivilegedAction {
-    private PrintServer printServer;
 
-    public PrivilegedPrintServerAction(PrintServer printServer) {
-        this.printServer = printServer;
-    }
+    private static PrintServer printServer = new PrintServer();
 
     protected PrintServer getPrintServer() {
         return printServer;
@@ -47,4 +43,5 @@ public abstract class PrivilegedPrintServerAction implements PrivilegedAction {
 
         return null;
     }
+
 }

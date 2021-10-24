@@ -1,13 +1,10 @@
 package printserver.action;
 
-import printserver.PrintServer;
-
 public class ReadConfigAction extends PrivilegedPrintServerAction {
 
     private String parameter;
 
-    public ReadConfigAction(PrintServer printServer, String parameter) {
-        super(printServer);
+    public ReadConfigAction(String parameter) {
         this.parameter = parameter;
     }
 

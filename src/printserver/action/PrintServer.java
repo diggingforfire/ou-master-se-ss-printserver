@@ -1,6 +1,7 @@
-package printserver;
+package printserver.action;
 
-public class PrintServer {
+class PrintServer {
+
     public void print(String fileName) {
 
     }
@@ -36,4 +37,5 @@ public class PrintServer {
     public void setConfig(String parameter, String value) {
 
     }
+
 }

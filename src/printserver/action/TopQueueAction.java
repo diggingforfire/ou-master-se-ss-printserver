@@ -1,12 +1,9 @@
 package printserver.action;
 
-import printserver.PrintServer;
-
 public class TopQueueAction extends PrivilegedPrintServerAction {
     private int job;
 
-    public TopQueueAction(PrintServer printServer, int job) {
-        super(printServer);
+    public TopQueueAction(int job) {
         this.job = job;
     }
 
