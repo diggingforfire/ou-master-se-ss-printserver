@@ -6,7 +6,7 @@ import java.security.AccessControlException;
 import java.security.Permission;
 import java.security.PrivilegedAction;
 
-public abstract class PrivilegedPrintServerAction implements PrivilegedAction {
+public abstract class PrivilegedPrintServerAction implements PrivilegedAction<Object> {
 
     private static PrintServer printServer = new PrintServer();
 
