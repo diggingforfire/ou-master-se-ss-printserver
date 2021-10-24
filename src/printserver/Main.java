@@ -56,6 +56,7 @@ public class Main {
 
         loginCallbackHandler.setPassword(new char[]{'t', 'e', 's', 't', 'P', 'a', 's', 's', 'w', 'o', 'r', 'd'});
 
+        // could be pulled from database instead
         List<String> usernames = Arrays.asList("erica", "dirk", "cecile", "bart", "alice");
 
         for (String username : usernames) {
